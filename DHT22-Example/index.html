@@ -4,7 +4,6 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta http-equiv="refresh" content="1">
     <link rel="icon" href="data:,">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -43,18 +42,22 @@
         </table>
     </div>
     <script>
+        //console.log("Hello World!");
         setInterval(function () {
             var xhttp = new XMLHttpRequest();
-            xhttp.responseType = 'json';
+            //xhttp.responseType = 'json';
             xhttp.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-                    document.getElementById("temp").innerHTML = this.response.temperature;
-                    document.getElementById("hum").innerHTML = this.response.humidity;
+                    //console.log(this.response);
+                    var reading = JSON.parse(this.responseText);
+                    document.getElementById("temp").innerHTML = reading.temperature;
+                    document.getElementById("hum").innerHTML = reading.humidity;
+                    //console.log(this.response);
                 }
             };
             xhttp.open("GET", "/readings", true);
             xhttp.send();
-        }, 10000);
+        }, 2000);
 
     </script>
 

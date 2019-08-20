@@ -12,10 +12,10 @@ def get_dht_readings():
   sensor = dht.DHT22(Pin(14))
   sensor.measure()
   readings = {
-    'temperature' :sensor.temperature(),
-    'humidity' : sensor.humidity()
+    "temperature" :sensor.temperature(),
+    "humidity" : sensor.humidity()
   }
-  return readings
+  return str(readings).replace("'", '"')
 
 def web_page():
   f = open('index.html')
@@ -32,7 +32,7 @@ while True:
     if gc.mem_free() < 102000:
       gc.collect()
     conn, addr = s.accept()
-    conn.settimeout(3.0)
+    #conn.settimeout(1.0)
     print('Got a connection from %s' % str(addr))
     request = conn.recv(1024)
     conn.settimeout(None)
@@ -42,7 +42,7 @@ while True:
     if get_readings == 6:
       response = get_dht_readings()
       conn.send('HTTP/1.1 200 OK\n')
-      conn.send('Content-Type: application/json\n')
+      conn.send('Content-Type: text/plain\n')
       conn.send('Connection: keep-alive\n\n')
       conn.sendall(response)
     else:
@@ -55,6 +55,3 @@ while True:
   except OSError as e:
     conn.close()
     print('Connection closed')
-
-
-
