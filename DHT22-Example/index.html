@@ -32,27 +32,51 @@
             <tbody>
                 <tr id="temp-div">
                     <td>Temp. Celsius</td>
-                    <td><span id="temp">[TEMP_PLACEHOLDER]</span></td>
+                    <td><span id="temp">loading_data</span></td>
                 </tr>
                 <tr id="hum-div">
                     <td>Humidity</td>
-                    <td><span id="hum">[HUM_PLACEHOLDER]</span></td>
+                    <td><span id="hum">loading_data</span></td>
                 </tr>
             </tbody>
         </table>
     </div>
     <script>
-        //console.log("Hello World!");
+        function get_color_in_range(v, list, upper_limit) {
+            if (upper_limit === ">"){
+                if (v > list[0]) {
+                    return "table-danger";
+                }
+                else if (v > list[1]) {
+                    return "table-warning";
+                }
+                else {
+                    return "table-success";
+                }
+            }else{
+                if (v < list[0]) {
+                    return "table-danger";
+                }
+                else if (v < list[1]) {
+                    return "table-warning";
+                }
+                else {
+                    return "table-success";
+                }
+            }
+        }
         setInterval(function () {
             var xhttp = new XMLHttpRequest();
-            //xhttp.responseType = 'json';
             xhttp.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
-                    //console.log(this.response);
+                console.log(this.response);
                     var reading = JSON.parse(this.responseText);
                     document.getElementById("temp").innerHTML = reading.temperature;
+                    var temp_cell = document.getElementById("temp-div");
+                    temp_cell.className = get_color_in_range(reading.temperature, [50,40], '>');
                     document.getElementById("hum").innerHTML = reading.humidity;
-                    //console.log(this.response);
+                    var hum_cell = document.getElementById("hum-div");
+                    hum_cell.className = get_color_in_range(reading.humidity, [15,30], '<');
                 }
             };
             xhttp.open("GET", "/readings", true);

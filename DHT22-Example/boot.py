@@ -43,8 +43,6 @@ while station.isconnected() == False:
 print('Connection successful')
 print(station.ifconfig())
 
-
-exec(open('./example.py').read(),globals())
-#sensor = dht.DHT22(Pin(14))
-#sensor = dht.DHT11(Pin(14))
+# Uncomment the following to run webserver on boot
+#exec(open('./example.py').read(),globals())
 
