@@ -4,17 +4,29 @@ from machine import Pin
 import machine
 import dht 
 import ujson
+import urequests
 
 #sensor = dht.DHT11(Pin(14))
 # Complete project details at https://RandomNerdTutorials.com
 
-def get_dht_readings():
+# curl -X POST -H "Content-Type: application/json" -d '{"value1":"28.1 ||| 34.5 ||| 93.2 ||| 0"}' https://maker.ifttt.com/trigger/tree-readings/with/key/gggKF_YLmK-jLQNvjb5WwDDjlNGbMQ3uNrtBzklcSZJ
+
+def get_readings():
   sensor = dht.DHT22(Pin(14)) #D5
   sensor.measure()
   readings = {
     "temperature" :sensor.temperature(),
-    "humidity" : sensor.humidity()
+    "humidity" : sensor.humidity(),
+    "rain": 0,        #TODO Implement
+    "soil": 99.2,     #TODO Implement
+    "sunlight": 33.3  #TODO Implement
   }
+  # Data logging to google drive.
+  # The IFTTT key is stored in a file named 'key'   
+  url = f"https://maker.ifttt.com/trigger/tree-readings/with/key/{open('key', 'r').read().strip()}"
+  headers = {'Content-Type': 'application/json'}
+  data = {'value1' : ' ||| '.join([str(x) for x in readings.values()])}
+  r = urequests.post(url, data=ujson.dumps(data), headers=headers)
   return ujson.dumps(readings) #important to encode the data before sending it.
 
 def web_page():
@@ -40,7 +52,7 @@ while True:
     get_readings = request.find('/readings')
     print('Content = %s' % request)
     if get_readings == 6:
-      response = get_dht_readings()
+      response = get_readings()
       conn.send('HTTP/1.1 200 OK\n')
       conn.send('Content-Type: application/json\n')
       conn.send('Connection: close\n\n')

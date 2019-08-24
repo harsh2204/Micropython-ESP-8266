@@ -5,6 +5,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="icon" href="data:,">
+    <!-- <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"> -->
+    <link href="https://kit-pro.fontawesome.com/releases/v5.10.2/css/pro.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
     <style>
@@ -14,15 +16,19 @@
         }
 
         body {
-            background-color: darkslateblue
+            background-color: darkslateblue;
+        }
+        .table{
+            font-size: 2vw;
+            width: 0.75vw;
         }
     </style>
 </head>
 
 <body>
     <div id='temp-sense' class="container-fluid">
-        <h3 style="color: white">Temperature Sensor</h3>
-        <table class="table table-bordered table-dark table-hover text-center">
+        <h1 class="text-center" style="color: white"><i class="fad fa-tree-decorated" aria-hidden="true"></i> Tree Monitor</h3>
+        <table class="table table-bordered table-dark table-hover text-left">
             <thead class="thead-dark">
                 <tr>
                     <th scope="col">MEASUREMENT</th>
@@ -30,15 +36,38 @@
                 </tr>
             </thead>
             <tbody>
-                <tr id="temp-div">
-                    <td>Temp. Celsius</td>
-                    <td><span id="temp">loading_data</span></td>
+                <tr id="temperature-div">
+                    <td><i class="fa fa-thermometer-half" aria-hidden="true"></i>
+                            Temperature</td>
+                    <td><span id="temperature">loading_data</span></td>
                 </tr>
-                <tr id="hum-div">
-                    <td>Humidity</td>
-                    <td><span id="hum">loading_data</span></td>
+                <tr id="humidity-div">
+                    <td><i class="far fa-humidity" aria-hidden="true"></i>
+                            Humidity</td>
+                    <td><span id="humidity">loading_data</span></td>
+                </tr>
+                <tr id="rain-div">
+                    <td><i class="fa fa-shower" aria-hidden="true"></i>
+                            Rain Fall</td>
+                    <td><span id="rain">loading_data</span></td>
+                </tr>
+                <tr id="soil-div">
+                    <td><i class="fas fa-water-lower" aria-hidden="true"></i>
+                            Soil Moisture</td>
+                    <td><span id="soil">loading_data</span></td>
+                </tr>
+                <tr id="sunlight-div">
+                    <td><i class="fad fa-sun" aria-hidden="true"></i>
+                            Sunlight</td>
+                    <td><span id="sunlight">loading_data</span></td>
                 </tr>
             </tbody>
+            <tfoot class="thead-dark">
+                <tr>
+                    <th><i class="fad fa-plus-square" aria-hidden="true"></i> Health</th>
+                    <th>loading_data</th>
+                </tr>
+            </tfoot>
         </table>
     </div>
     <script>
@@ -65,18 +94,35 @@
                 }
             }
         }
+        function get_color_class(field, v) {
+            switch(field){
+                case 'temperature':
+                    return get_color_in_range(v, [50, 40], '>');
+                case "humidity":
+                    return get_color_in_range(v, [15, 30], '<');
+                case "rain":
+                    return get_color_in_range(v, [1, 15], '<');
+                case "soil":
+                    return get_color_in_range(v, [5, 20], '<');
+                case "sunlight":
+                    return get_color_in_range(v, [25, 45], '<');
+                default:
+                    return "table-info";
+            }
+        }
         setInterval(function () {
             var xhttp = new XMLHttpRequest();
             xhttp.onreadystatechange = function () {
                 if (this.readyState == 4 && this.status == 200) {
                 console.log(this.response);
                     var reading = JSON.parse(this.responseText);
-                    document.getElementById("temp").innerHTML = reading.temperature;
-                    var temp_cell = document.getElementById("temp-div");
-                    temp_cell.className = get_color_in_range(reading.temperature, [50,40], '>');
-                    document.getElementById("hum").innerHTML = reading.humidity;
-                    var hum_cell = document.getElementById("hum-div");
-                    hum_cell.className = get_color_in_range(reading.humidity, [15,30], '<');
+                    
+                    Object.keys(reading).forEach(function(key) {
+                        console.table('Key : ' + key + ', Value : ' + reading[key])
+                        document.getElementById(key).innerHTML = reading[key];
+                        var temp_cell = document.getElementById(key+"-div");
+                        temp_cell.className = get_color_class(key, reading[key])
+                    })
                 }
             };
             xhttp.open("GET", "/readings", true);
