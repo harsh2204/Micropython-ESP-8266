@@ -6,11 +6,6 @@ import dht
 import ujson
 import urequests
 
-#sensor = dht.DHT11(Pin(14))
-# Complete project details at https://RandomNerdTutorials.com
-
-# curl -X POST -H "Content-Type: application/json" -d '{"value1":"28.1 ||| 34.5 ||| 93.2 ||| 0"}' https://maker.ifttt.com/trigger/tree-readings/with/key/gggKF_YLmK-jLQNvjb5WwDDjlNGbMQ3uNrtBzklcSZJ
-
 def get_readings():
   sensor = dht.DHT22(Pin(14)) #D5
   sensor.measure()
