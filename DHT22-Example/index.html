@@ -4,8 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="icon" href="data:,">
-    <!-- <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"> -->
+    <link rel="icon" href="data:,">    
     <link href="https://kit-pro.fontawesome.com/releases/v5.10.2/css/pro.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
         integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -62,10 +61,10 @@
                     <td><span id="sunlight">loading_data</span></td>
                 </tr>
             </tbody>
-            <tfoot class="thead-dark">
+            <tfoot class="thead-dark" id='health-div'>
                 <tr>
                     <th><i class="fad fa-plus-square" aria-hidden="true"></i> Health</th>
-                    <th>loading_data</th>
+                    <th id="health">loading_data</th>
                 </tr>
             </tfoot>
         </table>
@@ -106,6 +105,8 @@
                     return get_color_in_range(v, [5, 20], '<');
                 case "sunlight":
                     return get_color_in_range(v, [25, 45], '<');
+                case "health":
+                    return get_color_in_range(v, [25, 60], '<');
                 default:
                     return "table-info";
             }
@@ -116,13 +117,15 @@
                 if (this.readyState == 4 && this.status == 200) {
                 console.log(this.response);
                     var reading = JSON.parse(this.responseText);
-                    
+                    let health = 100; // TODO implement health calculator
                     Object.keys(reading).forEach(function(key) {
                         console.table('Key : ' + key + ', Value : ' + reading[key])
                         document.getElementById(key).innerHTML = reading[key];
                         var temp_cell = document.getElementById(key+"-div");
                         temp_cell.className = get_color_class(key, reading[key])
                     })
+                    var footer = document.getElementById('health');
+                    footer.innerHTML = health + "%";
                 }
             };
             xhttp.open("GET", "/readings", true);
