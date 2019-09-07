@@ -1,13 +1,13 @@
 from machine import Pin
-import machine
 import dht 
 import time
 
 dht_pin = Pin(14) #D5 GPIO 14
 refresh_rate = 2  #Seconds (DHT22 maximum sampling rate)
 
+dht_sensor = dht.DHT22(dht_pin)
+
 def get_readings():
-  dht_sensor = dht.DHT22(dht_pin)
   dht_sensor.measure()
   
   temperature = dht_sensor.temperature()
@@ -18,11 +18,13 @@ def get_readings():
 
 
 def main():
-  print('Checking temperature every ' + refresh_rate + 'seconds')
+  print('Checking temperature every ' + str(refresh_rate) + 'seconds')
   while True:
-    temp, hum = get_readings()
-    print("Temperature " + temp + "°C  |  Humidity " + hum + "%")
-    time.sleep(refresh_rate)
-
+    try:
+      temp, hum = get_readings()
+      print("Temperature " + str(temp) + "°C  |  Humidity " + str(hum) + "%")
+      time.sleep(refresh_rate)
+    except KeyboardInterrupt:
+      break
 
 main()
