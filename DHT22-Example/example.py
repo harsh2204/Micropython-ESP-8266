@@ -9,7 +9,7 @@ import urequests
 dht_pin = Pin(14) #D5 GPIO 14
 rain_pin = 12     #D6 GPIO 12
 sun_pin = 2       #D4 GPIO 2
-soil_pin = 4      #D2 GPIO 4
+soil_pin = 0      #D3 GPIO 0
 
 class analogMux(object):
     def __init__(self, digital_pin, analog_pin=0, warmup_time=50):
