@@ -2,13 +2,11 @@
 import os
 import uos, machine
 
-#import esp
-#esp.osdebug(None)
-
 #import webrepl
 #webrepl.start()
 
 import gc
+# gc.enable() We can enable automatic garbage collection
 gc.collect()
 
 # Uncomment the following to run the example on boot

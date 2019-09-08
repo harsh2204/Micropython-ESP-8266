@@ -1,6 +1,17 @@
-# DHT-22 Example
+DHT-22 Example
 
 This is a basic example of the popular DHT22 temperature and humidity sensor.
+
+Table of Contents
+---
+- [Table of Contents](#table-of-contents)
+    - [Prerequisites](#prerequisites)
+    - [Hookup Guide](#hookup-guide)
+  - [Code](#code)
+    - [µPython Basics](#%C2%B5python-basics)
+    - [`boot.py`](#bootpy)
+    - [`example.py`](#examplepy)
+---
 
 #### Prerequisites
 
@@ -22,7 +33,7 @@ While that may have sounded complicated, this is a very simple setup. However, d
 
 Since this is the first guide in the series, I will try to give a quick overview of µPython. µPython is very similar to Python3 as it was written with the syntactic elegance and zen of python in mind. Therefore, if you have experience coding in python, you can probably skip this guide, read and understand the code without any trouble.
 
-#### µPython Crash Course
+#### µPython Basics
 
 We will get straight into general board control and GPIO pins, which is mainly what you need for this example. The most important module required for controling the board is the `machine` module. This module holds a whole host of useful methods and classes including `Pin`, `ADC`, etc. There are standar python modules like `sys` and `os` as well which are not used as much as the `machine` module, however you can check what board you're running on by running `sys.platform`. Anyway, back to `machine`:
 
@@ -33,4 +44,81 @@ We will get straight into general board control and GPIO pins, which is mainly w
 >>> led_pin.off()
 ```
 
-We can also read from digital pins by using the `Pin.IN` mode and calling the read function. We can also set a weak pull up/down resistor which uses a high value internal resistor (47k-100k) on the pin. 
+The code is quite verbose in terms of the function names and their actualy functionality, which means with most things you can use `dir` on the class/object, and you don't even have to look at documentation. 
+
+We can also read from digital pins by using the `Pin.IN` mode and calling the read function. We can also set a weak pull up/down resistor which uses a high value internal resistor (47k-100k) on the pin. We can read the signal on the pin using the `read` function.
+
+```python
+>>> sensor_pin = Pin(14, Pin.IN)
+>>> print(sensor_pin.value()) # Returns a 0/1 -> (HIGH/LOW)
+```
+
+We can do some more cool things with `Pin.IN` mode like setting up interrupts. However, that is a topic for later.
+
+#### `boot.py`
+
+This file contains code that runs every boot (including wake-boot from deepsleep). This file should only contain code essential for boot up (eg. wifi setup, bootup display, etc). Therefore for the most part, the contents of this file will remain the same after a point.
+
+```python
+import os
+import uos, machine
+```
+
+These modules are mainly used by your ide to get information about your device and get a list of the files on your board.
+
+```python
+import gc
+
+#gc.enable() We can enable automatic garbage collection
+gc.collect()
+```
+
+We run a garbage collection before starting any new programs.
+
+#### `example.py`
+
+```python
+from machine import Pin
+import dht 
+import time
+```
+
+The `dht` module is packaged with all the ports of µPython, and while µPy tries to include all the basic modules for common use cases, there times when you have to download and copy modules from the internet or even write your own modules due to the limited maturity of this µPy. We will use the `time` module for setting our sampling rate by delaying the reading timings.
+
+```python
+dht_pin = Pin(14) #D5 GPIO 14
+refresh_rate = 2  #Seconds (DHT22 maximum sampling rate)
+
+dht_sensor = dht.DHT22(dht_pin)
+```
+
+We must instantiate a class from the `dht` module to get the sensor instance which will allow us to make readings. The module supports both DHT11 and 22 sensors, and thus contains two classes `DHT11` and `DHT22` both of which take one input parameter of the `Pin` object.
+
+```python
+def get_readings():
+  dht_sensor.measure()
+  
+  temperature = dht_sensor.temperature()
+  humidity = dht_sensor.humidity()
+  # temperature = temperature * (9/5) + 32.0  #Fahrenheit
+ 
+  return temperature, humidity
+```
+
+The `get_readings` function just runs the sequence of commands required for acquiring the temperature and humitidty and returns them. The return type is a tuple, which means we can assign these values to individual variables, this is commonly refered as 'tuple unpacking' or 'multiple assignment'.
+
+```python
+def main():
+  print('Checking temperature every ' + str(refresh_rate) + 'seconds')
+  while True:
+    try:
+      temp, hum = get_readings()
+      print("Temperature " + str(temp) + "°C  |  Humidity " + str(hum) + "%")
+      time.sleep(refresh_rate)
+    except KeyboardInterrupt:
+      break
+
+main()
+```
+
+It's a common practice in programming to define a `main` function that defines the overall control flow of your program and is called when running the file. Here, we also use a `try/except` block to handle `KeyboardInterrupt` for when we want to stop the main loop. Note that we convert `int` values to `str` explicitly since µPy does not support implicit string conversion of integers and floats when adding with strings. Also, the `time.sleep` function just pause the code execution for any number of seconds which is passed in as an input parameter. Note that `main` is called at the end of the file which means it will run everytime the file is run.
