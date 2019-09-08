@@ -1,101 +1,45 @@
-import time
 from machine import Pin
 import machine
 import dht
-import ujson
-import urequests
+
+dht_pin = Pin(14)  # D5 GPIO 14
 
 
-dht_pin = Pin(14) #D5 GPIO 14
-rain_pin = 12     #D6 GPIO 12
-sun_pin = 2       #D4 GPIO 2
-soil_pin = 0      #D3 GPIO 0
+def get_readings():
+    readings = {}
+    dht_sensor = dht.DHT22(dht_pin)
+    dht_sensor.measure()
+    return """<!doctype html><html><head> <meta charset="utf-8"> <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"> <meta http-equiv="refresh" content="1"> <link rel="icon" href="data:,"> <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> <style>#temp-sense{margin: auto; width: 30% !important;}body{background-color: darkslateblue}</style> </head> <body> <div id='temp-sense' class="container-fluid"> <h3 style="color: white">Temperature Sensor</h3> <table class="table table-bordered table-dark table-hover text-center"> <thead class="thead-dark"> <tr> <th scope="col">MEASUREMENT</th> <th scope="col">VALUE</th> </tr></thead> <tbody> <tr><td>Temp. Celsius</td><td><span>"""
+    + '{0:3.1f}'.format(dht_sensor.temperature()) + """ C</span></td></tr><tr><td>Humidity</td><td><span>"""
+    + str(dht_sensor.humidity()) + """%</span></td></tr> </tbody> </table> </div><script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script> <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script> <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> </body> </html>"""
 
-class analogMux(object):
-    def __init__(self, digital_pin, analog_pin=0, warmup_time=50):
-      self.dpin = Pin(digital_pin, Pin.OUT)
-      self.dpin.off()
-      self.apin = machine.ADC(analog_pin)
-      self.warmup_time = warmup_time
-    def __enter__(self):
-        self.dpin.on()
-        time.sleep_ms(self.warmup_time)
-        return self.apin
-    def __exit__(self, *args):        
-        self.dpin.off()
-
-# Courtesy https://www.raspberrypi.org/forums/viewtopic.php?t=149371
-def valmap(value, istart, istop, ostart, ostop):
-  return ostart + (ostop - ostart) * ((value - istart) / (istop - istart))
-  
-def get_readings(data_log=False):
-  readings = {}
-  dht_sensor = dht.DHT22(dht_pin)
-  dht_sensor.measure()
-  
-  readings["temperature"] = dht_sensor.temperature()
-  readings["humidity"] = dht_sensor.humidity()
-  
-  # Reading analog values sequentially since there is only one analog pin on our board
-
-  with analogMux(rain_pin) as p:
-    readings["rain"] = round(valmap(p.read(), 930, 50, 0, 100))
-    
-  with analogMux(sun_pin) as p:   
-    readings["sunlight"] = round(valmap(p.read(), 0, 1024, 0, 100))
-  
-  with analogMux(soil_pin) as p:       
-    readings["soil"] = round(valmap(p.read(), 0, 1024, 0, 100))
-  
-  # Data logging to google drive.
-  # The IFTTT key is stored in a file named 'key.ini'   
-  if (data_log):
-    url = "https://maker.ifttt.com/trigger/tree-readings/with/key/"+ open('key.ini', 'r').read().strip()
-    headers = {'Content-Type': 'application/json'}
-    data = {'value1' : ' ||| '.join([str(x) for x in readings.values()])}
-    urequests.post(url, data=ujson.dumps(data), headers=headers)
-  
-  return ujson.dumps(readings) #important to encode the data before sending it.
-
-def web_page():
-  f = open('index.html')
-  html = f.read()
-  f.close()
-  return html
 
 
 def main():
-  s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-  s.bind(('', 80))
-  s.listen(5)
-  while True:
-    try:
-      if gc.mem_free() < 102000:
-        gc.collect()
-      conn, addr = s.accept()
-      #conn.settimeout(1.0)
-      print('Got a connection from %s' % str(addr))
-      request = conn.recv(1024)
-      conn.settimeout(None)
-      request = str(request)
-      readings = request.find('/readings')
-      print('Content = %s' % request)
-      if readings== 6:        
-        response = get_readings()
-        conn.send('HTTP/1.1 200 OK\n')
-        conn.send('Content-Type: application/json\n')
-        conn.send('Connection: close\n\n')
-        conn.sendall(response)
-      else:
-        response = web_page()
-        conn.send('HTTP/1.1 200 OK\n')
-        conn.send('Content-Type: text/html\n')
-        conn.send('Connection: close\n\n')
-        conn.sendall(response)
-      conn.close()
-    except OSError as e:
-      conn.close()
-      print('Connection closed')
-      
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(('', 80))
+    s.listen(5)
+    while True:
+        try:
+            if gc.mem_free() < 102000:
+                gc.collect()
+            conn, addr = s.accept()
+            # conn.settimeout(1.0)
+            print('Got a connection from %s' % str(addr))
+            request = conn.recv(1024)
+            conn.settimeout(None)
+            request = str(request)
+            print('Content = %s' % request)
+            response = get_readings()
+            conn.send('HTTP/1.1 200 OK\n')
+            conn.send('Content-Type: text/html\n')
+            conn.send('Connection: close\n\n')
+            conn.sendall(response)
+            conn.close()
+        except OSError as e:
+            conn.close()
+            print('Connection closed')
+
+
 main()
-#print(get_readings())
+# print(get_readings())
