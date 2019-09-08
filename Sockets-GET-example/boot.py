@@ -1,8 +1,8 @@
 # This file is executed on every boot (including wake-boot from deepsleep)
 import os
 import uos, machine
-from machine import Pin
-
+from machine import Pin, I2C
+import ssd1306
 import network
 import dht
 
@@ -43,6 +43,17 @@ while station.isconnected() == False:
 print('Connection successful')
 print(station.ifconfig())
 
+i2c = I2C(-1, Pin(5), Pin(4))
+
+oled = ssd1306.SSD1306_I2C(128, 32, i2c)
+
+oled.fill(0)
+
+oled.text('Tree Monitor', 0, 0)
+oled.text('Connect to dash', 0, 10)
+oled.text('@ '+station.ifconfig()[0], 0, 20)
+
+oled.show()
 # Uncomment the following to run webserver on boot
 #exec(open('./example.py').read(),globals())
 
