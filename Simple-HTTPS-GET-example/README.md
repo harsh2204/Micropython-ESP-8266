@@ -4,8 +4,8 @@ This is an example of the sockets api in µPython which builds on top of the pre
 
 Table of Contents
 
-#### Prerequisites
+#### Prerequisites and Hookup Guide
 
-See previous  (add link here)
+See previous  [guide](https://github.com/harsh2204/Micropython-ESP-8266/tree/master/DHT22-Example#prerequisites)
 
 #### Code
