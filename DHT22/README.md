@@ -23,7 +23,7 @@ Table of Contents
 
 #### Hookup Guide
 
-![DHT22-Hookup](https://raw.githubusercontent.com/harsh2204/Micropython-ESP-8266/master/DHT22-Example/circuit_diagram.png)
+![DHT22-Hookup](https://raw.githubusercontent.com/harsh2204/Micropython-ESP-8266/refs/heads/master/DHT22/circuit_diagram.png)
 
 Note that the third pin on DHT22 and DHT11 are NC (No connection). Also R1 is a pull up resistor connected to 3V3 (obviously? [read this for more on pull up resistors](https://learn.sparkfun.com/tutorials/pull-up-resistors/all)). To elaborate on why we must add a pull up resistor, due to the [NTC](http://www.resistorguide.com/ntc-thermistor/) (Negative Thermal Coefficient) Thermistor inside the sensor, we always need some current flowing through the thermistor which means that we need to connect a high value resistor to pass a tiny amount of current through the data line.
 
